@@ -202,8 +202,9 @@ defaultSettings:
   createDefaultDiskLabeledNodes: false
   defaultDataPath: /var/longhorn
   defaultReplicaCount: ${var.longhorn_replica_count}
-  node-down-pod-deletion-policy: delete-both-statefulset-and-deployment-pod
-  node-drain-policy: allow-if-replica-is-stopped
+  nodeDownPodDeletionPolicy: delete-both-statefulset-and-deployment-pod
+  nodeDrainPolicy: block-if-contains-last-replica
+  replicaAutoBalance: least-effort
 persistence:
   defaultFsType: ext4
   defaultClassReplicaCount: ${var.longhorn_replica_count}
@@ -214,6 +215,13 @@ persistence:
   automatically_upgrade_k3s = false
   automatically_upgrade_os  = var.high_availability
   install_k3s_version       = "v1.35.3+k3s1"
+
+  # Prune unused images at 70% full (down to 60%), below Longhorn's unschedulable
+  # line (25% free = 75% used), so the shared /var/longhorn disk stays schedulable.
+  k3s_global_kubelet_args = [
+    "image-gc-high-threshold=70",
+    "image-gc-low-threshold=60",
+  ]
 
   kured_options = {
     "reboot-days"   = local.kured_reboot_day
