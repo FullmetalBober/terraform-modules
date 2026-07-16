@@ -216,12 +216,12 @@ persistence:
   automatically_upgrade_os  = var.high_availability
   install_k3s_version       = "v1.35.3+k3s1"
 
-  # Prune unused images at 70% full (down to 60%), below Longhorn's unschedulable
-  # line (25% free = 75% used), so the shared /var/longhorn disk stays schedulable.
-  k3s_global_kubelet_args = [
+  # With Longhorn: prune images at 70% (to 60%), under its 25%-free unschedulable line.
+  # Without: [] -> kubelet default 85/80, so images can use more of the disk.
+  k3s_global_kubelet_args = var.enable_longhorn ? [
     "image-gc-high-threshold=70",
     "image-gc-low-threshold=60",
-  ]
+  ] : []
 
   kured_options = {
     "reboot-days"   = local.kured_reboot_day
